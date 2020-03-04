@@ -4,7 +4,6 @@ using UnityEngine.Events;
 public class CharacterController2D : MonoBehaviour
 {
 	[SerializeField] private float m_JumpForce = 400f;							// Amount of force added when the player jumps.
-
 	[Range(0, 1)] [SerializeField] private float m_CrouchSpeed = .36f;			// Amount of maxSpeed applied to crouching movement. 1 = 100%
 	[Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f;	// How much to smooth out the movement
 	[SerializeField] private bool m_AirControl = false;							// Whether or not a player can steer while jumping;
@@ -19,6 +18,10 @@ public class CharacterController2D : MonoBehaviour
 	private Rigidbody2D m_Rigidbody2D;
 	private bool m_FacingRight = true;  // For determining which way the player is currently facing.
 	private Vector3 m_Velocity = Vector3.zero;
+
+	public float jumpMultiplayer = 100;
+	public float glideVar = 20f;
+	public bool glideOnce = false;
 
 	[Header("Events")]
 	[Space]
@@ -62,7 +65,7 @@ public class CharacterController2D : MonoBehaviour
 	}
 
 
-	public void Move(float move, bool crouch, bool cookJump)
+	public void Move(float move, bool crouch, bool cookJump, bool jump, bool glide)
 	{
 		// If crouching, check to see if the character can stand up
 		if (crouch)
@@ -127,11 +130,52 @@ public class CharacterController2D : MonoBehaviour
 		// If the player should jump...
 		if (m_Grounded && cookJump)
 		{
+			glideOnce = false;
+
+			//adding this to the jump for the player to jump higher to a max value that is stored in m_JumpForce 
+			if (jumpMultiplayer < m_JumpForce)
+			{
+				jumpMultiplayer +=30;
+			}
+		}
+		// If the player should jump...
+		if (m_Grounded && jump)
+		{
 			// Add a vertical force to the player.
 			m_Grounded = false;
 
-			m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
+			m_Rigidbody2D.AddForce(new Vector2(0f, jumpMultiplayer));
+			jumpMultiplayer = 100;
 		}
+		if (glide)
+		{
+			// Add a vertical force to the player.
+			m_Rigidbody2D.AddForce(new Vector2(0f, glideVar));
+		}
+		if(glideOnce == false)
+		{
+			if (glide && cookJump)
+			{
+				// Add a vertical force to the player.
+				m_Grounded = false;
+				//adding this to the jump for the player to jump higher to a max value that is stored in m_JumpForce 
+				if (jumpMultiplayer < m_JumpForce)
+				{
+					jumpMultiplayer += 100;
+				}
+			}
+			// If the player should jump...
+			if (glide && jump)
+			{
+				// Add a vertical force to the player.
+				m_Grounded = false;
+
+				m_Rigidbody2D.AddForce(new Vector2(0f, jumpMultiplayer));
+				jumpMultiplayer = 100;
+				glideOnce = true;
+			}
+		}
+
 	}
 
 

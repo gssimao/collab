@@ -10,24 +10,45 @@ public class playerMovement : MonoBehaviour
 
     public float runSpeed = 40f;
 
+    public bool cookJump = false;
+
+    public bool glide = false;
+
     public bool jump = false;
+
+    public bool crouch = false;
 
     // Update is called once per frame
     void Update()
     {
         horizontalMove = Input.GetAxisRaw("Horizontal")* runSpeed;
 
-        if(Input.GetButtonDown("Jump"))
+        if (Input.GetButtonDown("Jump"))
         {
-            jump = true;
+            cookJump = true;
+            crouch = true;
         }
-
+        if (Input.GetButtonUp("Jump"))
+        {
+            cookJump = false;
+            jump = true;
+            crouch = false;
+        }
+        if (Input.GetButtonDown("Glide"))
+        {
+            glide = true;
+        }
+        if(Input.GetButtonUp("Glide"))
+        {
+            glide = false;
+        }
     }
 
     private void FixedUpdate()
     {
-        Debug.Log(jump);
-        controller.Move(horizontalMove* Time.fixedDeltaTime, false, jump);
+        //Debug.Log(jump);
+        controller.Move(horizontalMove* Time.fixedDeltaTime, crouch, cookJump, jump, glide);
         jump = false;
+        
     }
 }
